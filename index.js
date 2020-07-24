@@ -15,7 +15,7 @@ exports.handler = function (event, context, callback) {
     let token = messageDataJson.Token;
 
     let currentTime = new Date().getTime();
-    let ttl = 60 * 60 * 1000;
+    let ttl = 3 * 60 * 1000;
     let expirationTime = (currentTime + ttl).toString();
 
     var emailParams = {
@@ -28,7 +28,7 @@ exports.handler = function (event, context, callback) {
             Body: {
                 Text: {
                     Charset: "UTF-8",
-                    Data:  "Dear User, here is the link to reset your password: "+link
+                    Data:  "Dear User, here is the link to reset your password: "+ "http://prod.pavan.website/token="+ token
                 }
             },
             Subject: {
@@ -43,7 +43,8 @@ exports.handler = function (event, context, callback) {
         TableName: "csye6225",
         Item: {
             id: { S: email },
-            ttl: { N: expirationTime }
+            ttl: { N: expirationTime },
+            token: { S: token}
         }
     };
     let queryParams = {
@@ -53,23 +54,59 @@ exports.handler = function (event, context, callback) {
         },
     };
 
-    ddb.putItem(putParams, (err, data) => {
+    
 
-        console.log("Data putitem::" + data);
+
+    ddb.getItem(queryParams, (err, data) => {
+
 
         if (err) {
             console.log(err);
         } else {
+            let jsonData = JSON.stringify(data);
 
-            ses.sendEmail(emailParams).promise()
-                .then(function (data) {
-                    console.log("email successfully sent");
-                })
-                .catch(function (err) {
-                    console.error(err, err.stack);
+            let parsedJson = JSON.parse(jsonData);
+            if (data.Item == undefined) {
+
+                ddb.putItem(putParams, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+
+                        ses.sendEmail(emailParams).promise()
+                            .then(function (data) {
+                                console.log(data.MessageId);
+                            })
+                            .catch(function (err) {
+                                console.error(err, err.stack);
+                            });
+                    }
                 });
+            } else {
+                let curr = new Date().getTime();
+
+                let ttl = Number(parsedJson.Item.ttl.N);
+
+                if (curr > ttl) {
+
+                    ddb.putItem(putParams, (err, data) => {
+
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            ses.sendEmail(emailParams).promise()
+                                .then(function (data) {
+                                    console.log(data.MessageId);
+                                })
+                                .catch(function (err) {
+                                    console.error(err, err.stack);
+                                });
+                        }
+                    });
+                } else {
+                    console.log('Email already sent in the last 60 mins for user ::'+email);
+                }
+            }
         }
     });
-
 }
-console.log(" lamba complete 1")
