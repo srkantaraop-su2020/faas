@@ -3,6 +3,7 @@ const aws = require("aws-sdk");
 aws.config.update({region: 'us-east-1'});
 var ses = new aws.SES();
 console.log(" starting  indexjs")
+var ddb = new aws.DynamoDB({ apiVersion: '2012-08-10' });
 
 exports.handler = function (event, context, callback) {
     console.log(event.Records[0].Sns);
