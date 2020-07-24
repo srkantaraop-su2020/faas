@@ -5,30 +5,43 @@ var ses = new aws.SES();
 console.log(" starting  indexjs")
 
 exports.handler = function (event, context, callback) {
-console.log("starting handler")
+    console.log(event.Records[0].Sns);
 
-var params = {
-    Destination: {
-        ToAddresses: [
-            'srkantarao.p@northeastern.edu'
-        ]
-    },
-    Message: {
-        Body: {
-            Text: {
+    let message = event.Records[0].Sns.Message;
+    let messageDataJson = JSON.parse(JSON.parse(message).data);
+
+    let email = messageDataJson.Email;
+    let link = messageDataJson.Link;
+
+    console.log("Email for :: " + email);
+    console.log("Link to send :: " + link);
+
+    let currentTime = new Date().getTime();
+    let ttl = 60 * 60 * 1000;
+    let expirationTime = (currentTime + ttl).toString();
+
+    var params = {
+        Destination: {
+            ToAddresses: [
+                email
+            ]
+        },
+        Message: {
+            Body: {
+                Text: {
+                    Charset: "UTF-8",
+                    Data:  "Hi there, your link to reset password is"+link
+                }
+            },
+            Subject: {
                 Charset: "UTF-8",
-                Data:  "hi there !! this ie generated email"
+                Data: " Password Reset Link"
             }
         },
-        Subject: {
-            Charset: "UTF-8",
-            Data: " Password Reset Link"
-        }
-    },
-    Source: "passwordreset@prod.pavan.website"
-};
+        Source: "passwordreset@prod.pavan.website"
+    };
 
-ses.sendEmail(params).promise().then((data) => {
+    ses.sendEmail(params).promise().then((data) => {
         console.log("email successfully sent");
     })
     .catch((err)=>{
