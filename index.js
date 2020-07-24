@@ -12,10 +12,7 @@ exports.handler = function (event, context, callback) {
     let messageDataJson = JSON.parse(JSON.parse(message).data);
 
     let email = messageDataJson.Email;
-    let link = messageDataJson.Link;
-
-    console.log("Email for :: " + email);
-    console.log("Link to send :: " + link);
+    let token = messageDataJson.Token;
 
     let currentTime = new Date().getTime();
     let ttl = 60 * 60 * 1000;
@@ -63,9 +60,6 @@ exports.handler = function (event, context, callback) {
         if (err) {
             console.log(err);
         } else {
-
-            console.log(data);
-            console.log('Updating last sent timestamp');
 
             ses.sendEmail(emailParams).promise()
                 .then(function (data) {
