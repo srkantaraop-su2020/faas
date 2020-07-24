@@ -20,7 +20,7 @@ exports.handler = function (event, context, callback) {
     let ttl = 60 * 60 * 1000;
     let expirationTime = (currentTime + ttl).toString();
 
-    var params = {
+    var emailParams = {
         Destination: {
             ToAddresses: [
                 email
@@ -30,7 +30,7 @@ exports.handler = function (event, context, callback) {
             Body: {
                 Text: {
                     Charset: "UTF-8",
-                    Data:  "Hi there, your link to reset password is"+link
+                    Data:  "Dear User, here is the link to reset your password: "+link
                 }
             },
             Subject: {
@@ -41,12 +41,40 @@ exports.handler = function (event, context, callback) {
         Source: "passwordreset@prod.pavan.website"
     };
 
-    ses.sendEmail(params).promise().then((data) => {
-        console.log("email successfully sent");
-    })
-    .catch((err)=>{
-        console.log("error occured"+ err)
-    })
+    let putParams = {
+        TableName: "csye6225",
+        Item: {
+            id: { S: email },
+            ttl: { N: expirationTime }
+        }
+    };
+    let queryParams = {
+        TableName: 'csye6225',
+        Key: {
+            'id': { S: email }
+        },
+    };
+
+    ddb.putItem(putParams, (err, data) => {
+
+        console.log("Data putitem::" + data);
+
+        if (err) {
+            console.log(err);
+        } else {
+
+            console.log(data);
+            console.log('Updating last sent timestamp');
+
+            ses.sendEmail(emailParams).promise()
+                .then(function (data) {
+                    console.log("email successfully sent");
+                })
+                .catch(function (err) {
+                    console.error(err, err.stack);
+                });
+        }
+    });
 
 }
 console.log(" lamba complete 1")
