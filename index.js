@@ -15,7 +15,7 @@ exports.handler = function (event, context, callback) {
     let token = messageDataJson.Token;
 
     let currentTime = new Date().getTime();
-    let ttl = 3 * 60 * 1000;
+    let ttl = 15 * 60 * 1000;
     let expirationTime = (currentTime + ttl).toString();
 
     var emailParams = {
@@ -104,7 +104,7 @@ exports.handler = function (event, context, callback) {
                         }
                     });
                 } else {
-                    console.log('Email already sent in the last 60 mins for user ::'+email);
+                    console.log('Email already sent in the last 15 mins for user ::'+email);
                 }
             }
         }
