@@ -2,8 +2,7 @@ const aws = require("aws-sdk");
 
 aws.config.update({region: 'us-east-1'});
 var ses = new aws.SES();
-console.log(" starting  indexjs")
-var ddb = new aws.DynamoDB({ apiVersion: '2012-08-10' });
+var dynamoDB = new aws.DynamoDB({ apiVersion: '2012-08-10' });
 
 exports.handler = function (event, context, callback) {
     console.log(event.Records[0].Sns);
@@ -55,10 +54,7 @@ exports.handler = function (event, context, callback) {
     };
 
     
-
-
-    ddb.getItem(queryParams, (err, data) => {
-
+    dynamoDB.getItem(queryParams, (err, data) => {
 
         if (err) {
             console.log(err);
@@ -68,7 +64,7 @@ exports.handler = function (event, context, callback) {
             let parsedJson = JSON.parse(jsonData);
             if (data.Item == undefined) {
 
-                ddb.putItem(putParams, (err, data) => {
+                dynamoDB.putItem(putParams, (err, data) => {
                     if (err) {
                         console.log(err);
                     } else {
@@ -84,12 +80,10 @@ exports.handler = function (event, context, callback) {
                 });
             } else {
                 let curr = new Date().getTime();
-
                 let ttl = Number(parsedJson.Item.ttl.N);
-
                 if (curr > ttl) {
 
-                    ddb.putItem(putParams, (err, data) => {
+                    dynamoDB.putItem(putParams, (err, data) => {
 
                         if (err) {
                             console.log(err);
