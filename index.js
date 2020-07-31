@@ -26,7 +26,7 @@ exports.handler = function (event, context, callback) {
         Message: {
             Body: {
                 Html: {
-                    Data: `<html><head><title>Your Token</title><style>h1{color:#f00;}</style></head><body><h1>Hello,</h1><div>Your Password Reset Token is ${token}</div></body></html>`
+                    Data: `<html><head><title>Your Token</title><style>h1{color:#f00;}</style></head><body><h1>Hello,</h1><div>Your Password Reset Token is http://prod.pavan.website/token=${token}</div></body></html>`
                 }
             },
             Subject: {
