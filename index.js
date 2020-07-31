@@ -25,9 +25,8 @@ exports.handler = function (event, context, callback) {
         },
         Message: {
             Body: {
-                Text: {
-                    Charset: "UTF-8",
-                    Data:  "Dear User, here is the link to reset your password: "+ "http://prod.pavan.website/token="+ token
+                Html: {
+                    Data: `<html><head><title>Your Token</title><style>h1{color:#f00;}</style></head><body><h1>Hello,</h1><div>Your Password Reset Token is ${token}</div></body></html>`
                 }
             },
             Subject: {
